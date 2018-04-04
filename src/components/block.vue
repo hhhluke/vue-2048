@@ -71,19 +71,36 @@
             },
             //键盘监听事件
             keyDown(e) {
-                if ([38, 40, 37, 39].includes(e.keyCode)) {
-                    this.list.forEach((item,index) => {
-                        // item = this.moveLeft(item)
-                        // console.log(123,this.moveLeft(item));
-                        this.$set(this.list,index,this.moveLeft(item))
-                    })
-                console.log(this.list);
+                switch (e.keyCode) {
+                    case 38://上3
+                    console.log(this.T(Array.from(this.list),3));
+                        // let arr = this.T(Array.from(this.list),3).map((item, index) => {
+                        //     return this.moveLeft(item)
+                        // })
+                        // this.list = this.T(arr,1)
+                        break
+                    case 40://下1
+                        this.list.forEach((item, index) => {
+                            this.$set(this.list, index, this.moveLeft(item))
+                        })
+                        break
+                    case 37://左0
+                        this.list.forEach((item, index) => {
+                            this.$set(this.list, index, this.moveLeft(item))
+                        })
+                        break
+                    case 38://右2
+                        this.list.forEach((item, index) => {
+                            this.$set(this.list, index, this.moveLeft(item))
+                        })
+                        break
                 }
-                // this.$set(this.list)
+                // this.setRandom()
             },
+            //单行左移
             moveLeft(list) {
-                // console.log('init',list);
                 let _list = [] //当前行非空格子
+                let flg = false
                 for (let i = 0; i < this.size; i++) {
                     if (list[i]) {
                         _list.push({
@@ -93,31 +110,46 @@
                         })
                     }
                 }
-                // console.log('_list',_list);
                 _list.forEach(item => {
-                    console.log(item);
-                    let [_prev, _cell] = this.farthestPosition(list,item)
-                    if(list[_cell.x] && list[_cell.x] === item && !list[_cell.x].merged) {
+                    let farthest = this.farthestPosition(list, item)
+                    let next = list[farthest - 1]
+                    if (next && next === item.value && !_list[farthest - 1].merged) {
                         //合并
-                    }else {
-                        if(_prev) {
-                            list[_prev.x] = item.value
+                        list[farthest - 1] = next * 2
+                        list[item.x] = undefined
+                        item = {
+                            x: farthest - 1,
+                            merged: true,
+                            value: next * 2
+                        }
+                    } else {
+                        if (farthest != item.x) {
+                            list[farthest] = item.value
                             list[item.x] = undefined
+                            item.x = farthest
                         }
                     }
                 })
-                // console.log('list',list);
                 return list
             },
+            T(arr, n) {
+                n = n % 4;
+                if (n === 0) return arr;
+                var l = arr.length,
+                    d = Math.sqrt(l),
+                    tmp = [];
+                for (var i = 0; i < d; i += 1)
+                    for (var j = 0; j < d; j += 1)
+                        tmp[d - i - 1 + j * d] = arr[i * d + j];
+                if (n > 1) tmp = this.T(tmp, n - 1);
+                return tmp;
+            },
             farthestPosition(list, cell) {
-                cell = JSON.parse(JSON.stringify(cell))
-                var previous
-                while (cell.x - 1 >= 0 && !list[cell.x - 1]){
-                    previous = cell
-                    cell.x = previous.x - 1
+                let farthest = cell.x
+                while (farthest > 0 && !list[farthest - 1]) {
+                    farthest = farthest - 1
                 }
-                // console.log(123,previous,cell);
-                return [previous,cell]
+                return farthest
             }
         }
     }
