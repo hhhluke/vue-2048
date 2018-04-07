@@ -27,7 +27,6 @@
             init() {
                 this.list = Array.from(Array(this.size)).map(() => Array(this.size).fill(undefined))
                 this.setRandom()
-                // this.setRandom()
                 document.addEventListener('keyup', this.keyDown)
             },
             //插入新格子
@@ -71,31 +70,29 @@
             },
             //键盘监听事件
             keyDown(e) {
+                let arr = null
                 switch (e.keyCode) {
-                    case 38://上3
-                    console.log(this.T(Array.from(this.list),3));
-                        // let arr = this.T(Array.from(this.list),3).map((item, index) => {
-                        //     return this.moveLeft(item)
-                        // })
-                        // this.list = this.T(arr,1)
+                    case 38: //上
+                        this.move(1)
                         break
-                    case 40://下1
-                        this.list.forEach((item, index) => {
-                            this.$set(this.list, index, this.moveLeft(item))
-                        })
+                    case 40: //下
+                        this.move(3)
                         break
-                    case 37://左0
-                        this.list.forEach((item, index) => {
-                            this.$set(this.list, index, this.moveLeft(item))
-                        })
+                    case 37: //左
+                        this.move(0)
                         break
-                    case 38://右2
-                        this.list.forEach((item, index) => {
-                            this.$set(this.list, index, this.moveLeft(item))
-                        })
+                    case 39: //右
+                        this.move(2)
                         break
                 }
-                // this.setRandom()
+                this.setRandom()
+            },
+            //移动算法，i表示旋转次数
+            move(i) {
+                let arr = this.rotate(Array.from(this.list), i).map((item, index) => {
+                    return this.moveLeft(item)
+                })
+                this.list = this.rotate(arr, this.size - i)
             },
             //单行左移
             moveLeft(list) {
@@ -132,18 +129,20 @@
                 })
                 return list
             },
-            T(arr, n) {
-                n = n % 4;
-                if (n === 0) return arr;
-                var l = arr.length,
-                    d = Math.sqrt(l),
-                    tmp = [];
-                for (var i = 0; i < d; i += 1)
-                    for (var j = 0; j < d; j += 1)
-                        tmp[d - i - 1 + j * d] = arr[i * d + j];
-                if (n > 1) tmp = this.T(tmp, n - 1);
-                return tmp;
+            //逆时针旋转
+            rotate(arr, n) {
+                n = n % 4
+                if (n === 0) return arr
+                let tmp  = Array.from(Array(this.size)).map(() => Array(this.size).fill(undefined))
+                for (let i = 0; i < this.size; i++) {
+                    for (let j = 0; j < this.size; j++) {
+                        tmp[this.size - 1 - i][j] = arr[j][i]
+                    }
+                }
+                if(n > 1) tmp = this.rotate(tmp, n - 1)
+                return tmp
             },
+            //左边最远空格的x位置
             farthestPosition(list, cell) {
                 let farthest = cell.x
                 while (farthest > 0 && !list[farthest - 1]) {
