@@ -9,18 +9,15 @@
                 </div>
                 <div>
                     <span>BEST</span>
-                    <span class="num">{{best}}</span>
+                    <span class="num">{{bestScore}}</span>
                 </div>
             </div>
         </div>
-        <p>
-            <span>2048</span>
-            <div class="btn">新游戏</div>
-        </p>
+        <div class="btn btn-mg" @click="newGame">新游戏</div>
         <div>
-            <div class="over">
+            <div class="over" v-if="over">
                 <p>Game over!</p>
-                <div class="btn">Try again</div>
+                <div class="btn" @click="newGame">Try again</div>
             </div>
             <div class="box">
                 <div class="row" v-for="row in list">
@@ -40,8 +37,8 @@
                 list: [],
                 intiNum: [2, 4],
                 pr: 0.9,
-                best: 0,
                 score: 0,
+                bestScore: localStorage.getItem('bestScore'),
                 over: false,
                 direction: [{
                     x: 0,
@@ -64,9 +61,14 @@
         },
         methods: {
             init() {
+                this.newGame()
+                document.addEventListener('keyup', this.keyDown)
+            },
+            newGame() {
+                this.score = 0
+                this.over = false
                 this.list = Array.from(Array(this.size)).map(() => Array(this.size).fill(undefined))
                 this.setRandom()
-                document.addEventListener('keyup', this.keyDown)
             },
             //插入新格子
             setRandom() {
@@ -98,8 +100,6 @@
                 }
                 return cells
             },
-            //当前有数据格子数组
-
             //是否存在空格子
             hasAvailableCells() {
                 return !!this.availableCells().length
@@ -111,13 +111,20 @@
                         if (cell) {
                             for (let dir = 0; dir < 4; dir++) {
                                 let vector = this.direction[dir]
-                                let other = this.list[i + vector.x][j + vector.y]
-                                if (other && other === cell) return true
+                                if (this.withinBounds(i + vector.x, j + vector.y)) {
+                                    let other = this.list[i + vector.x][j + vector.y]
+                                    if (other && other === cell) {
+                                        return true
+                                    }
+                                }
                             }
                         }
                     }
                 }
                 return false
+            },
+            withinBounds(x, y) {
+                return x > 0 && y > 0 && x < this.size && y < this.size
             },
             isAvailable() {
                 return this.hasAvailableCells() || this.hasMergedCells()
@@ -151,6 +158,7 @@
                     return this.moveLeft(item)
                 })
                 this.list = this.rotate(arr, this.size - i)
+                this.setLocalstorage()
                 if (!this.isAvailable()) {
                     this.over = true
                 }
@@ -211,6 +219,18 @@
                     farthest = farthest - 1
                 }
                 return farthest
+            },
+            setLocalstorage() {
+                let score = localStorage.getItem('bestScore')
+                if (score) {
+                    if (this.score > score) {
+                        localStorage.setItem('bestScore', this.score)
+                        this.bestScore = this.score
+                    }
+                } else {
+                    localStorage.setItem('bestScore', this.score)
+                    this.bestScore = this.score
+                }
             }
         }
     }
@@ -283,7 +303,9 @@
             text-align: center;
             color: #f9f6f2;
             background: #8f7a66;
-
+            &.btn-mg {
+                margin-bottom: 10px;
+            }
         }
         .box {
             width: 400px;
