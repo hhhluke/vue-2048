@@ -1,8 +1,31 @@
 <template>
     <div class="wrapper">
-        <div class="box">
-            <div class="row" v-for="row in list">
-                <div class="col" :class="'n-'+col" v-for="col in row">{{col}}</div>
+        <div class="header">
+            <h1 class="title">2048</h1>
+            <div class="score">
+                <div>
+                    <span>SCORE</span>
+                    <span class="num">{{score}}</span>
+                </div>
+                <div>
+                    <span>BEST</span>
+                    <span class="num">{{best}}</span>
+                </div>
+            </div>
+        </div>
+        <p>
+            <span>2048</span>
+            <div class="btn">新游戏</div>
+        </p>
+        <div>
+            <div class="over">
+                <p>Game over!</p>
+                <div class="btn">Try again</div>
+            </div>
+            <div class="box">
+                <div class="row" v-for="row in list">
+                    <div class="col" :class="'n-'+col" v-for="col in row">{{col}}</div>
+                </div>
             </div>
         </div>
     </div>
@@ -17,6 +40,22 @@
                 list: [],
                 intiNum: [2, 4],
                 pr: 0.9,
+                best: 0,
+                score: 0,
+                over: false,
+                direction: [{
+                    x: 0,
+                    y: -1
+                }, {
+                    x: 0,
+                    y: 1
+                }, {
+                    x: -1,
+                    y: 0
+                }, {
+                    x: 1,
+                    y: 0
+                }]
             }
         },
         mounted() {
@@ -43,7 +82,6 @@
             //获取随机一个空格子坐标
             randomAvailableCells() {
                 let cells = this.availableCells()
-                // console.log('cells', cells);
                 if (cells.length) {
                     return cells[Math.floor(Math.random() * cells.length)]
                 }
@@ -60,9 +98,29 @@
                 }
                 return cells
             },
+            //当前有数据格子数组
+
             //是否存在空格子
             hasAvailableCells() {
                 return !!this.availableCells().length
+            },
+            hasMergedCells() {
+                for (let i = 0; i < this.size; i++) {
+                    for (let j = 0; j < this.size; j++) {
+                        let cell = this.list[i][j]
+                        if (cell) {
+                            for (let dir = 0; dir < 4; dir++) {
+                                let vector = this.direction[dir]
+                                let other = this.list[i + vector.x][j + vector.y]
+                                if (other && other === cell) return true
+                            }
+                        }
+                    }
+                }
+                return false
+            },
+            isAvailable() {
+                return this.hasAvailableCells() || this.hasMergedCells()
             },
             //获取0-n的随机数
             randomNum(index) {
@@ -93,6 +151,9 @@
                     return this.moveLeft(item)
                 })
                 this.list = this.rotate(arr, this.size - i)
+                if (!this.isAvailable()) {
+                    this.over = true
+                }
             },
             //单行左移
             moveLeft(list) {
@@ -119,6 +180,7 @@
                             merged: true,
                             value: next * 2
                         }
+                        this.score += next * 2
                     } else {
                         if (farthest != item.x) {
                             list[farthest] = item.value
@@ -133,13 +195,13 @@
             rotate(arr, n) {
                 n = n % 4
                 if (n === 0) return arr
-                let tmp  = Array.from(Array(this.size)).map(() => Array(this.size).fill(undefined))
+                let tmp = Array.from(Array(this.size)).map(() => Array(this.size).fill(undefined))
                 for (let i = 0; i < this.size; i++) {
                     for (let j = 0; j < this.size; j++) {
                         tmp[this.size - 1 - i][j] = arr[j][i]
                     }
                 }
-                if(n > 1) tmp = this.rotate(tmp, n - 1)
+                if (n > 1) tmp = this.rotate(tmp, n - 1)
                 return tmp
             },
             //左边最远空格的x位置
@@ -159,6 +221,70 @@
     .wrapper {
         display: flex;
         justify-content: center;
+        flex-direction: column;
+        align-items: center;
+        .header {
+            width: 400px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #776e65;
+            .title {
+                font-size: 60px;
+            }
+            .score {
+                display: flex;
+                justify-content: space-between;
+                height: 80px; // line-height: 60px;
+                div {
+                    // width: 100px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    padding-left: 5px;
+                    padding-right: 5px;
+                    border-radius: 5px;
+                    background: #bbada0;
+                    .num {
+                        font-size: 25px;
+                        font-weight: bold;
+                        color: #ffffff;
+                    }
+                    &:last-child {
+                        margin-left: 5px;
+                    }
+                }
+            }
+        }
+        .over {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: rgba(238, 228, 218, 0.73);
+            z-index: 1000;
+            border-radius: 5px;
+            text-align: center;
+            color: #8f7a66;
+            p {
+                font-size: 60px;
+                font-weight: bold;
+                height: 60px;
+                line-height: 60px;
+            }
+        }
+        .btn {
+            display: inline-block;
+            padding: 0 20px;
+            height: 40px;
+            line-height: 40px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            color: #f9f6f2;
+            background: #8f7a66;
+
+        }
         .box {
             width: 400px;
             height: 400px;
@@ -166,6 +292,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            box-sizing: border-box;
             border-radius: 5px;
             background: #bbada0;
             .row {
