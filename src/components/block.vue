@@ -338,6 +338,40 @@
                     &.n-4 {
                         background: #ede0c8;
                     }
+                    
+                    &.n-8 {
+                        background: #f26179;
+                    }
+                    &.n-16 {
+                        background: #f59563;
+                    }
+                    &.n-32 {
+                        background: #f67c5f;
+                    }
+                    &.n-64 {
+                        background: #f65e36;
+                    }
+                    &.n-128 {
+                        background: #edcf72;
+                    }
+                    &.n-256 {
+                        background: #edcc61;
+                    }
+                    &.n-512 {
+                        background: #9c0;
+                    }
+                    &.n-1024 {
+                        background: #3365a5;
+                    }
+                    &.n-2048 {
+                        background: #09c;
+                    }
+                    &.n-4096 {
+                        background: #a6bc;
+                    }
+                    &.n-8192 {
+                        background: #93c;
+                    }
                 }
             }
         }
